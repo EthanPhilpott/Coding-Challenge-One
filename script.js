@@ -404,15 +404,6 @@ function Not (bin) {
     return final
 }
 
-function Master (input) {
-    // Removes all "\n" and replaces them with a " \n ", the spaces are importaint for the Paser
-    input = input.split("\n").join(' \n ');
-
-    // The Parse function splits the words and operators into their respective parts, it also makes any numbers into their binary coefficents.
-    parsed = Parse(input);
-    return parsed
-}
-
 function Parse (input) {
     result = [];
     let index = 0;
@@ -421,24 +412,7 @@ function Parse (input) {
     while (index < input.length) {
         
         if (input[index] === ' ') {
-            let number = true;
-            word = word.split('');
-
-            for (let i = 0; i < word.length; i++) {
-                if (!'1234567890'.includes(word[i])) {
-                    number = false;
-                    break;
-                }
-            }
-
-            word = word.join('');
-
-            if (number) {
-                result.push(Bin(word))
-            } else {
-                result.push(word);
-            }
-
+            result.push(word);
             word = "";
         } else {
             word += input[index];
@@ -448,6 +422,60 @@ function Parse (input) {
     }
 
     return result;
+}
+
+function Master (input) {
+    // Dictonary of all kown values
+    known = {};
+
+    // Removes all "\n" and replaces them with a " \n ", the spaces are importaint for the Parser
+    input = input.split("\n").join(' \n ');
+
+    // The Parse function splits the words and operators into their respective parts, it also makes any numbers into their binary coefficents.
+    parsed = Parse(input);
+    
+    let index = 0;
+
+    while (index < parsed.length) {
+
+        currentParse = parsed[index];
+
+        switch (currentParse) {
+            case 'AND':
+                // Some Code Here
+                break;
+            case 'OR':
+                // Some Code Here
+                break;
+            case 'NOT':
+                // Some Code Here
+                break;
+            case 'LSHIFT':
+                // Some Code Here
+                break;
+            case 'RSHIFT':
+                // Some Code Here
+                break;
+            case '->':
+                // Some Code Here
+                break;
+            default:
+                if ("1234567890".includes(currentParse[0])) {
+                    parsed[index] = Bin(currentParse);
+                } else {
+                    for (let i = 0; i < currentParse.length; i++) {
+                        if (known.hasOwnProperty(currentParse[i])) {
+                            
+                        }
+                    }
+                }  
+            
+                
+        }
+
+        index++;
+    }
+    return parsed;
 }
 
 console.log(Master(data));

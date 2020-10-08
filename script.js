@@ -340,6 +340,26 @@ he RSHIFT 5 -> hh`;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+function Bin (dec) {
+    let final = '';
+    while (dec > 0) {
+        final += String(dec % 2);
+        dec = Math.floor(dec / 2);
+    }
+    for (let i = 0; final.length % 16 != 0; i++) {
+        final += '0';
+    }
+    return final.split('').reverse().join("");
+}
+
+function Dec (bin) {
+    let final = 0;
+    for (let i = 0; i < bin.length; i++) {
+        final += bin[i] * 2**(bin.length - i - 1)
+    }
+    return final
+}
+
 function RShift (bin) {
     return bin[bin.length -1] + bin.substring(0, bin.length -1)
 }
@@ -385,18 +405,49 @@ function Not (bin) {
 }
 
 function Master (input) {
-    Parse(input);
+    // Removes all "\n" and replaces them with a " \n ", the spaces are importaint for the Paser
+    input = input.split("\n").join(' \n ');
+
+    // The Parse function splits the words and operators into their respective parts, it also makes any numbers into their binary coefficents.
+    parsed = Parse(input);
+    return parsed
 }
 
 function Parse (input) {
     result = [];
     let index = 0;
+    let word = '';
 
     while (index < input.length) {
         
+        if (input[index] === ' ') {
+            let number = true;
+            word = word.split('');
 
-        index++
+            for (let i = 0; i < word.length; i++) {
+                if (!'1234567890'.includes(word[i])) {
+                    number = false;
+                    break;
+                }
+            }
+
+            word = word.join('');
+
+            if (number) {
+                result.push(Bin(word))
+            } else {
+                result.push(word);
+            }
+
+            word = "";
+        } else {
+            word += input[index];
+        }
+
+        index++;
     }
+
+    return result;
 }
 
-Master(data)
+console.log(Master(data));

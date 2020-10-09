@@ -360,6 +360,7 @@ function Dec (bin) {
     return final
 }
 
+// Likely need to edit these follwoing two functions
 function RShift (bin) {
     return bin[bin.length -1] + bin.substring(0, bin.length -1)
 }
@@ -404,6 +405,16 @@ function Not (bin) {
     return final
 }
 
+function InDict (item, dict) {
+    dict = Object.keys(dict);
+    for (let i = 0; i < dict.length; i++) {
+        if (dict[i] == item) {
+            return true
+        }
+    }
+    return false
+}
+
 function Parse (input) {
     result = [];
     let index = 0;
@@ -426,7 +437,9 @@ function Parse (input) {
 
 function Master (input) {
     // Dictonary of all kown values
-    known = {};
+    known = {
+        c: 0
+    };
 
     // Removes all "\n" and replaces them with a " \n ", the spaces are importaint for the Parser
     input = input.split("\n").join(' \n ');
@@ -459,23 +472,21 @@ function Master (input) {
             case '->':
                 // Some Code Here
                 break;
+            case '\n':
+                // Some Code Here
+                break;
             default:
                 if ("1234567890".includes(currentParse[0])) {
                     parsed[index] = Bin(currentParse);
                 } else {
-                    for (let i = 0; i < currentParse.length; i++) {
-                        if (known.hasOwnProperty(currentParse[i])) {
-                            
-                        }
+                    if (InDict(currentParse, known)) {
+                        // Some Code Here
                     }
                 }  
-            
-                
         }
-
         index++;
     }
-    return parsed;
+    return 0;
 }
 
 console.log(Master(data));

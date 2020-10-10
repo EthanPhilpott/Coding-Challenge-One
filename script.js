@@ -1,4 +1,4 @@
-const data = `lf AND lq -> ls
+const data = ` lf AND lq -> ls
 iu RSHIFT 1 -> jn
 bo OR bu -> bv
 gj RSHIFT 1 -> hc
@@ -336,7 +336,7 @@ y OR ae -> af
 hf AND hl -> hn
 NOT h -> i
 NOT hn -> ho
-he RSHIFT 5 -> hh`;
+he RSHIFT 5 -> hh `;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -349,6 +349,7 @@ function Bin (dec) {
     for (let i = 0; final.length % 16 != 0; i++) {
         final += '0';
     }
+
     return final.split('').reverse().join("");
 }
 
@@ -360,18 +361,24 @@ function Dec (bin) {
     return final
 }
 
-// Likely need to edit these follwoing two functions
-function RShift (bin) {
-    return bin[bin.length -1] + bin.substring(0, bin.length -1)
+// Likely need to edit these following two functions
+function RShift (bin, amt) {
+    for (let i = 0; i < amt; i++) {
+        bin = bin[bin.length-1] + bin.substring(0, bin.length-1);
+    }
+    return bin;
 }
 
-function LShift (bin) {
-    return bin.substring(1, bin.length) + bin[0]
+function LShift (bin, amt) {
+    for (let i = 0; i < amt; i++) {
+        bin = bin.substring(1, bin.length) + bin[0];
+    }
+    return bin;
 }
 
 function And (bin1, bin2) {
     let final = '';
-    for (let i = 0; i < bin; i++) {
+    for (let i = 0; i < bin1; i++) {
         if (bin1[i] === '1' && bin2[i] === '1') {
             final += '1';
         } else {
@@ -405,14 +412,18 @@ function Not (bin) {
     return final
 }
 
-function InDict (item, dict) {
-    dict = Object.keys(dict);
-    for (let i = 0; i < dict.length; i++) {
-        if (dict[i] == item) {
-            return true
+function InDict (item, dictKeys) {
+    for (let i = 0; i < dictKeys.length; i++) {
+        if (dictKeys[i] == item) {
+            return true;
         }
+    } 
+
+    if ("1234567890".includes(item)) {
+        return true;
     }
-    return false
+
+    return false;
 }
 
 function Parse (input) {
@@ -436,10 +447,8 @@ function Parse (input) {
 }
 
 function Master (input) {
-    // Dictonary of all kown values
-    known = {
-        c: 0
-    };
+    // Dictonary of all known values
+    known = {};
 
     // Removes all "\n" and replaces them with a " \n ", the spaces are importaint for the Parser
     input = input.split("\n").join(' \n ');
@@ -449,44 +458,60 @@ function Master (input) {
     
     let index = 0;
 
-    while (index < parsed.length) {
+    let value = '';
 
+    while (index < parsed.length) {
         currentParse = parsed[index];
 
+        okk = Object.keys(known)
+
+        if (InDict(currentParse, okk)) {
+            parsed[index] = known[currentParse];
+        }
+        
         switch (currentParse) {
             case 'AND':
-                // Some Code Here
+                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
+                    value = And(parsed[index - 1], parsed[index + 1]) 
+                }
                 break;
             case 'OR':
-                // Some Code Here
+                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
+                    value = Or(parsed[index - 1], parsed[index + 1])
+                }
                 break;
             case 'NOT':
-                // Some Code Here
+                if (InDict(parsed[index + 1], okk)) {
+                    value = Not(parsed[index]) 
+                }
                 break;
             case 'LSHIFT':
-                // Some Code Here
+                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
+                    value = LShift(parsed[index - 1], parsed[index + 1])
+                }
                 break;
             case 'RSHIFT':
-                // Some Code Here
+                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
+                    value = RShift(parsed[index - 1], parsed[index + 1])
+                }
                 break;
             case '->':
-                // Some Code Here
+                if (value != '') {
+                    known[parsed[index + 1]] = value
+                    console.log(parsed[index + 1], value)
+                }
                 break;
-            case '\n':
-                // Some Code Here
+            case '\n':   
+                value = ''; 
                 break;
             default:
                 if ("1234567890".includes(currentParse[0])) {
-                    parsed[index] = Bin(currentParse);
-                } else {
-                    if (InDict(currentParse, known)) {
-                        // Some Code Here
-                    }
-                }  
+                    value = Bin(currentParse);
+                }
         }
         index++;
     }
-    return 0;
+    return known;
 }
 
 console.log(Master(data));

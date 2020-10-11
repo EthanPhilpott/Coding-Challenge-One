@@ -341,19 +341,34 @@ he RSHIFT 5 -> hh `;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 function Bin (dec) {
-    let final = '';
-    while (dec > 0) {
-        final += String(dec % 2);
-        dec = Math.floor(dec / 2);
-    }
-    for (let i = 0; final.length % 16 != 0; i++) {
-        final += '0';
+    for (let i = 0; i < dec.length; i++) {
+        if (!"01".includes(dec[i])) {
+            let final = '';
+            while (dec > 0) {
+                final += String(dec % 2);
+                dec = Math.floor(dec / 2);
+            }
+            for (let i = 0; final.length % 16 != 0; i++) {
+                final += '0';
+            }
+
+            return final.split('').reverse().join("");
+        }
     }
 
-    return final.split('').reverse().join("");
+    for (let i = 0; dec.length % 16 != 0; i++) {
+        dec += '0';
+    }
+    return dec
 }
 
 function Dec (bin) {
+    for (let i = 0; i < bin.length; i++) {
+        if (!"01".includes(bin[i])) {
+            return bin
+        }
+    }
+
     let final = 0;
     for (let i = 0; i < bin.length; i++) {
         final += bin[i] * 2**(bin.length - i - 1)
@@ -361,7 +376,6 @@ function Dec (bin) {
     return final
 }
 
-// Likely need to edit these following two functions
 function RShift (bin, amt) {
     for (let i = 0; i < amt; i++) {
         bin = bin[bin.length-1] + bin.substring(0, bin.length-1);
@@ -378,8 +392,8 @@ function LShift (bin, amt) {
 
 function And (bin1, bin2) {
     let final = '';
-    for (let i = 0; i < bin1; i++) {
-        if (bin1[i] === '1' && bin2[i] === '1') {
+    for (let i = 0; i < 16; i++) {
+        if ((bin1[i] == '1') && (bin2[i] == '1')) {
             final += '1';
         } else {
             final += '0'
@@ -391,7 +405,7 @@ function And (bin1, bin2) {
 function Or (bin1, bin2) {
     let final = '';
     for (let i = 0; i < 16; i++) {
-        if (bin1[i] === '1' || bin2[i] === '1') {
+        if ((bin1[i] == '1') || (bin2[i] == '1')) {
             final += '1';
         } else {
             final += '0';
@@ -403,7 +417,7 @@ function Or (bin1, bin2) {
 function Not (bin) {
     let final = '';
     for (let i = 0; i < 16; i++) {
-        if (bin[i] === '1') {
+        if (bin[i] == '1') {
             final += '0';
         } else {
             final += '1';
@@ -418,11 +432,6 @@ function InDict (item, dictKeys) {
             return true;
         }
     } 
-
-    if ("1234567890".includes(item)) {
-        return true;
-    }
-
     return false;
 }
 
@@ -453,64 +462,84 @@ function Master (input) {
     // Removes all "\n" and replaces them with a " \n ", the spaces are importaint for the Parser
     input = input.split("\n").join(' \n ');
 
-    // The Parse function splits the words and operators into their respective parts, it also makes any numbers into their binary coefficents.
+    // The Parse function splits the words and operators into their respective parts
     parsed = Parse(input);
     
     let index = 0;
 
     let value = '';
 
-    while (index < parsed.length) {
-        currentParse = parsed[index];
+    let doneOperation = false;
 
-        okk = Object.keys(known)
-
-        if (InDict(currentParse, okk)) {
-            parsed[index] = known[currentParse];
-        }
+    while (!('a' in known)) {
+        index = 0;
         
-        switch (currentParse) {
-            case 'AND':
-                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
-                    value = And(parsed[index - 1], parsed[index + 1]) 
-                }
-                break;
-            case 'OR':
-                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
-                    value = Or(parsed[index - 1], parsed[index + 1])
-                }
-                break;
-            case 'NOT':
-                if (InDict(parsed[index + 1], okk)) {
-                    value = Not(parsed[index]) 
-                }
-                break;
-            case 'LSHIFT':
-                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
-                    value = LShift(parsed[index - 1], parsed[index + 1])
-                }
-                break;
-            case 'RSHIFT':
-                if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
-                    value = RShift(parsed[index - 1], parsed[index + 1])
-                }
-                break;
-            case '->':
-                if (value != '') {
-                    known[parsed[index + 1]] = value
-                    console.log(parsed[index + 1], value)
-                }
-                break;
-            case '\n':   
-                value = ''; 
-                break;
-            default:
-                if ("1234567890".includes(currentParse[0])) {
-                    value = Bin(currentParse);
-                }
+        while (index < parsed.length) {
+            currentParse = parsed[index];
+            
+            okk = Object.keys(known);
+            // console.log(known);
+            
+            switch (currentParse) {
+                case 'AND':
+                    doneOperation = true;
+                    if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
+                        value = And(known[parsed[index - 1]], known[parsed[index + 1]]);
+                    } else {
+                        value = '';
+                    }
+                    break;
+                case 'OR':
+                    doneOperation = true;
+                    if (InDict(parsed[index - 1], okk) && InDict(parsed[index + 1], okk)) {
+                        value = Or(known[parsed[index - 1]], known[parsed[index + 1]]);
+                    } else {
+                        value = '';
+                    }
+                    break;
+                case 'NOT':
+                    doneOperation = true;
+                    if (InDict(parsed[index + 1], okk)) {
+                        value = Not(known[parsed[index + 1]]);
+                    } else {
+                        value = '';
+                    }
+                    break;
+                case 'LSHIFT':
+                    doneOperation = true;
+                    if (InDict(parsed[index - 1], okk)) {
+                        value = LShift(known[parsed[index - 1]], Dec(parsed[index + 1]));
+                    } else {
+                        value = '';
+                    }
+                    break;
+                case 'RSHIFT':
+                    doneOperation = true;
+                    if (InDict(parsed[index - 1], okk)) {
+                        value = RShift(known[parsed[index - 1]], Dec(parsed[index + 1]));
+                    } else {
+                        value = '';
+                    }
+                    break;
+                case '->':
+                    doneOperation = false;
+                    if (value != '' && !(value in known)) {
+                        known[parsed[index + 1]] = Bin(value);
+                    }
+                    break;
+                case '\n':   
+                    value = ''; 
+                    break;
+                default:
+                    if (!doneOperation && "1234567890".includes(currentParse[0])) {
+                        value = currentParse;
+                    }
+            }
+            index++;
         }
-        index++;
+        1/0
     }
+
     return known;
 }
 
